@@ -227,6 +227,8 @@ client.on("message", message => {
         //console.log(database[database.findIndex(({file}) => file === queue[0][0].file)]);
         //DBに書き出し
         fs.writeFile(dbfile, JSON.stringify(database));
+        //登録完了を返信
+        message.reply("家虎を登録しました");
       }
       else{
         message.reply("その家虎は二番煎じだ！");
@@ -346,11 +348,12 @@ function count(){
     const ietora_ary = queue[0][0].housetigerTimes;
     for(let i in ietora_ary){
       //5秒前予告
+      const n = Number(i)+1;
       if((ietora_ary[i]-50)===timerCount){
-        msg.channel.send(`:warning: 家虎注意 :warning: (${(i+1)}/${ietora_ary.length}回目)`);
+        msg.channel.send(`:warning: 家虎注意 :warning: (${n}/${ietora_ary.length}回目)`);
       }
       else if((ietora_ary[i]-5)===timerCount){
-        msg.channel.send(`イエッタイガァァァァァァァァァァァァァァァァ！ (${(i+1)}/${ietora_ary.length}回目)`);
+        msg.channel.send(`イエッタイガァァァァァァァァァァァァァァァァ！ (${n}/${ietora_ary.length}回目)`);
       }
     }
   }
