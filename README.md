@@ -8,9 +8,11 @@
 
 ## 導入
 ### インストール
-```npm install
-cp config.sample.json config.json
-vim config.json```
+```
+    npm install
+    cp config.sample.json config.json
+    vim config.json 
+```
 discordのbot用トークンを取得して記述してください
 ### データーベースの作成(更新)
 ```node db_gen.js```
