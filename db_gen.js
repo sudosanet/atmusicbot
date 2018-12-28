@@ -1,6 +1,6 @@
 const fs = require('fs');
 const mm = require('music-metadata');
-const dirctory = '/home/sudosan/mp3/';
+const config = require("./config.json");
 const uuid = require('uuid/v4');
 let ary = [];
 let database;
@@ -15,7 +15,7 @@ else {
 
 console.log(database);
 
-fs.readdir(dirctory, (err, files) =>{
+fs.readdir(config.dirctory, (err, files) =>{
     check(files.length);
     files.forEach(element => {
         //console.log(element);
@@ -27,7 +27,7 @@ fs.readdir(dirctory, (err, files) =>{
             ary.push(result[0]);
         }
         else{
-            mm.parseFile(dirctory+element,{}).then((metadata)=> {
+            mm.parseFile(config.dirctory+element,{}).then((metadata)=> {
                 //console.log(metadata);
                 const data = {
                     file : element,
