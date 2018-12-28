@@ -1,0 +1,21 @@
+{
+  "name": "atmusicbot",
+  "version": "1.0.0",
+  "description": "music bot for discord on node",
+  "main": "bot.js",
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "fs": "^0.0.1-security",
+    "music-metadata": "^3.3.2",
+    "node-opus": "^0.3.1",
+    "request": "^2.88.0",
+    "ytdl-core": "^0.28.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bot.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
