@@ -8,11 +8,11 @@ const request = require('request');
 let database;
 const dbfile = 'database.json';
 if (!fs.existsSync(dbfile)) {
-    console.log("データーベースファイルが見つかりません");
-    process.exit();
+  console.log("データーベースファイルが見つかりません");
+  process.exit();
 }
 else {
-    database = JSON.parse(fs.readFileSync(dbfile, 'utf8'));
+  database = JSON.parse(fs.readFileSync(dbfile, 'utf8'));
 }
 const config = require("./config.json");
 
@@ -29,8 +29,8 @@ let search_result = [];
 let timerCount = 0;
 //曲経過時間変数用タイマー
 let timer;
-//家虎モード
-let isHouseTigerModeEnabled = false;
+//ここすきモード
+let iskokosukiModeEnabled = false;
 //ログイン
 client.login(config.token);
 //console.log(database);
@@ -70,16 +70,6 @@ client.on("message", message => {
   }
   else if (message.content === "!skip") {
     next();
-  }
-  else if (message.content.startsWith("!playurl")) {
-    const url = message.content.replace("!playurl ", "");
-    if (url.startsWith("https://www.youtube.com/watch") || url.match(new RegExp(/https?.*(mp3|flac|wav|m4a|opus|ogg)$/, "ig"))) {
-      queue.push([url, false]);
-      message.reply("追加しました");
-    }
-    else {
-      message.reply("URLが不正です");
-    }
   }
   else if (message.content.startsWith("!search")) {
     let query = message.content.replace("!search ", "");
@@ -130,28 +120,39 @@ client.on("message", message => {
   }
   else if (message.content.startsWith("!play")) {
     let query = message.content.replace("!play ", "");
-    if (query.length <= 2) {
-      const num = parseInt(query, 10);
-      if (num > 0 && num <= search_result.length) {
-        queue.push([search_result[num - 1], true]);
-        message.reply(search_result[num - 1].title + "を追加しました");
-        search_result = [];
-        return;
+    if (query.match(new RegExp(/https?.*/, "ig"))) {
+      if (query.startsWith("https://www.youtube.com/watch") || query.startsWith("https://youtu.be/") || query.match(new RegExp(/https?.*(mp3|flac|wav|m4a|opus|ogg)$/, "ig"))) {
+        queue.push([query, false]);
+        message.reply("追加しました");
+      }
+      else {
+        message.reply("URLが不正です");
       }
     }
-    let result = database.filter(m => m.title).filter(m => m.title.match(new RegExp(query, "ig")));
-    if (result.length > 30) {
-      message.reply("結果が多すぎます");
-    }
-    else if (result.length === 0) {
-      message.reply("結果が見つかりません");
-    }
     else {
-      //結果の中からランダムでキューに追加
-      const n = Math.floor(Math.random() * result.length);
-      queue.push([result[n], true]);
-      message.reply(result[n].title + "を追加しました");
-      search_result = [];
+      if (query.length <= 2) {
+        const num = parseInt(query, 10);
+        if (num > 0 && num <= search_result.length) {
+          queue.push([search_result[num - 1], true]);
+          message.reply(search_result[num - 1].title + "を追加しました");
+          search_result = [];
+          return;
+        }
+      }
+      let result = database.filter(m => m.title).filter(m => m.title.match(new RegExp(query, "ig")));
+      if (result.length > 30) {
+        message.reply("結果が多すぎます");
+      }
+      else if (result.length === 0) {
+        message.reply("結果が見つかりません");
+      }
+      else {
+        //結果の中からランダムでキューに追加
+        const n = Math.floor(Math.random() * result.length);
+        queue.push([result[n], true]);
+        message.reply(result[n].title + "を追加しました");
+        search_result = [];
+      }
     }
   }
   else if (message.content.startsWith("!queue remove")) {
@@ -186,64 +187,69 @@ client.on("message", message => {
       else {
         displayname = element[0];
       }
-      text += "\n [" + num + "]" + displayname;
+      text += "\n `[" + num + "]" + displayname + "`";
       num++;
     });
     message.reply(text);
   }
-  else if (message.content.startsWith("!nowplay")||message.content.startsWith("!np")) {
+  else if (message.content.startsWith("!nowplay") || message.content.startsWith("!np")) {
     //チャンネルに参加してない場合はリターン
     if (!isJoindChannnel) return;
-    mm.parseFile(config.directory + queue[0][0].file, {}).then((metadata) => {
-      let img = {};
-      if (metadata.common.picture) {
-        img = { file: metadata.common.picture[0].data };
-      }
-      let ietora_time_text ="";
-      if(queue[0][0].housetigerTimes.length===0){
-        ietora_time_text = "なし";
-      }
-      else{
-        queue[0][0].housetigerTimes.forEach(element => {
-          ietora_time_text += `${element/10}秒頃, `;
-        });
-      }
-      message.reply(`タイトル：${metadata.common.title}\nアルバム：${metadata.common.album}\nアーティスト：${metadata.common.artist}\n家虎：${ietora_time_text}`, img);
-    });
+    if (queue[0][1]) {
+      mm.parseFile(config.directory + queue[0][0].file, {}).then((metadata) => {
+        let img = {};
+        if (metadata.common.picture) {
+          img = { file: metadata.common.picture[0].data };
+        }
+        let kokosuki_time_text = "";
+        if (queue[0][0].kokosukiTimes.length === 0) {
+          kokosuki_time_text = "なし";
+        }
+        else {
+          queue[0][0].kokosukiTimes.forEach(element => {
+            kokosuki_time_text += `${element / 10}秒頃, `;
+          });
+        }
+        message.reply(`タイトル：${metadata.common.title}\nアルバム：${metadata.common.album}\nアーティスト：${metadata.common.artist}\nここすき：${kokosuki_time_text}`, img);
+      });
+    }
+    else {
+      message.reply("`URL:" + queue[0][0] + "`");
+    }
   }
-  else if(message.content.startsWith("!rht")||message.content.startsWith("!recodehousetiger")){
-    if(queue[0][1]){
+  else if (message.content.startsWith("!rks") || message.content.startsWith("!recodekokosuki")) {
+    if (queue[0][1]) {
       //カウンターの値と記録値が近似している場合を判定して重複を排除
-      //console.log(queue[0][0].housetigerTimes);
+      //console.log(queue[0][0].kokosukiTimes);
       //console.log(timerCount);
-      //現在より３秒以内に家虎されている場合配列を返す
-      const ietora_kaburi = queue[0][0].housetigerTimes.filter(w => Math.abs(timerCount-w)<30);
-      if(ietora_kaburi.length===0){
+      //現在より３秒以内にここすきされている場合配列を返す
+      const kokosuki_kaburi = queue[0][0].kokosukiTimes.filter(w => Math.abs(timerCount - w) < 30);
+      if (kokosuki_kaburi.length === 0) {
         //console.log(timerCount);
         //同時投稿で被らないようにキュー上のDBにも記録
-        queue[0][0].housetigerTimes.push(timerCount);
+        queue[0][0].kokosukiTimes.push(timerCount);
         //二回再生目で被らないようにローカルDBに記録
-        database[database.findIndex(({file}) => file === queue[0][0].file)] = queue[0][0];
+        database[database.findIndex(({ file }) => file === queue[0][0].file)] = queue[0][0];
         //console.log(database[database.findIndex(({file}) => file === queue[0][0].file)]);
         //DBに書き出し
         fs.writeFile(dbfile, JSON.stringify(database));
         //登録完了を返信
-        message.reply("家虎を登録しました");
+        message.reply("ここすきを登録しました");
       }
-      else{
-        message.reply("その家虎は二番煎じだ！");
+      else {
+        message.reply("そのここすきは二番煎じだ！");
       }
     }
-    else{
+    else {
       message.reply("この機能はローカルの音楽ファイルのみに適用可能です");
     }
   }
-  else if (message.content.startsWith("!togglehousetigermode")||message.content.startsWith("!thm")) {
-    isHouseTigerModeEnabled = !isHouseTigerModeEnabled;
-    message.reply(`家虎モードを${isHouseTigerModeEnabled ? "オン":"オフ"}にしました`);
+  else if (message.content.startsWith("!togglekokosukimode") || message.content.startsWith("!tkm")) {
+    iskokosukiModeEnabled = !iskokosukiModeEnabled;
+    message.reply(`ここすきモードを${iskokosukiModeEnabled ? "オン" : "オフ"}にしました`);
   }
   else if (message.content.startsWith("!help")) {
-    message.reply("使い方\n`!join` : Botを通話に追加します\n`!search (title|album|artist) string` : ローカルの音楽ファイルから検索を行います\n`!play number` : 検索結果の中から指定番号のファイルをキューに追加します\n`!play string` : ローカルの音楽ファイルから検索を行い最初にヒットした曲をキューに追加します\n`!playurl (youtube_url|file_url)` : Youtubeの動画またはリモート音楽ファイルをキューに追加します。対応形式はmp3,flac,wav,m4a(AAC),opus,oggです。\n`!skip` : 現在再生中のファイルをスキップします\n`!nowplay (!np)` : 現在再生中の音楽の詳細を表示します\n`!queue` : キューを表示します\n`!queue remove number` : キューから指定した曲を削除します\n`!queue remove all` : キューをリセットします\n`!recodehousetiger (!rht)` : 家虎を記録します(イエッタイガーしたいタイミングで実行してください)\n`!togglehousetigermode (!thm)` : 家虎がある曲のみを再生するモードをオン(オフ)にします\n`!help` : このヘルプを表示します");
+    message.reply("使い方\n`!join` : Botを通話に追加します\n`!search (title|album|artist) string` : ローカルの音楽ファイルから検索を行います\n`!play number` : 検索結果の中から指定番号のファイルをキューに追加します\n`!play string` : ローカルの音楽ファイルから検索を行い最初にヒットした曲をキューに追加します\n`!play (youtube_url|file_url)` : Youtubeの動画またはリモート音楽ファイルをキューに追加します。対応形式はmp3,flac,wav,m4a(AAC),opus,oggです。\n`!skip` : 現在再生中のファイルをスキップします\n`!nowplay (!np)` : 現在再生中の音楽の詳細を表示します\n`!queue` : キューを表示します\n`!queue remove number` : キューから指定した曲を削除します\n`!queue remove all` : キューをリセットします\n`!recodekokosuki (!rks)` : ここすきを記録します(ここすきしたいタイミングで実行してください)\n`!togglekokosukimode (!tkm)` : ここすきがある曲のみを再生するモードをオン(オフ)にします\n`!help` : このヘルプを表示します");
   }
 });
 let flag = false;
@@ -271,7 +277,7 @@ function play() {
   else {
     //i++;
     //msg.channel.send("再生："+queue[0][0]);
-    if (queue[0][0].startsWith("https://www.youtube.com/watch")) {
+    if (queue[0][0].startsWith("https://www.youtube.com/watch") || queue[0][0].startsWith("https://youtu.be/")) {
       ytdl.getInfo(queue[0][0], {}, (err, info) => {
         const form = (info.formats.filter(f => f.type == 'audio/webm; codecs="opus"'));
         stream = ytdl(queue[0][0], { format: form[0] });
@@ -294,7 +300,7 @@ function play() {
   //曲初回再生判定
   if (!flag) {
     //曲の経過時間は0.1秒単位で記録する
-    timer = setInterval(count,100);
+    timer = setInterval(count, 100);
     dispatcher = connect.playBroadcast(broadcast);
     flag = true;
   }
@@ -303,7 +309,7 @@ function play() {
 function next() {
   clearTimeout(timeout);
   //経過時間リセット
-  timerCount=0;
+  timerCount = 0;
   //console.log(dispatcher);
   /*if(dispatcher) {
     dispatcher.end();
@@ -312,11 +318,11 @@ function next() {
   queue.shift();
   if (queue.length === 0) {
     let music;
-    if(isHouseTigerModeEnabled){
-      const tmpDatabaseAry = database.filter(m => m.housetigerTimes.length>0);
+    if (iskokosukiModeEnabled) {
+      const tmpDatabaseAry = database.filter(m => m.kokosukiTimes.length > 0);
       music = tmpDatabaseAry[Math.floor(Math.random() * tmpDatabaseAry.length)];
     }
-    else{
+    else {
       music = database[Math.floor(Math.random() * database.length)];
     }
     queue.push([music, true]);
@@ -341,19 +347,19 @@ function bocchi() {
   }
 }
 //タイマーカウント関数
-function count(){
+function count() {
   timerCount++;
   //ローカルファイルのみ判定を行う
-  if(queue[0][1]){
-    const ietora_ary = queue[0][0].housetigerTimes;
-    for(let i in ietora_ary){
+  if (queue[0][1]) {
+    const kokosuki_ary = queue[0][0].kokosukiTimes;
+    for (let i in kokosuki_ary) {
       //5秒前予告
-      const n = Number(i)+1;
-      if((ietora_ary[i]-50)===timerCount){
-        msg.channel.send(`:warning: 家虎注意 :warning: (${n}/${ietora_ary.length}回目)`);
+      const n = Number(i) + 1;
+      if ((kokosuki_ary[i] - 50) === timerCount) {
+        msg.channel.send(`:warning: ここすき注意 :warning: (${n}/${kokosuki_ary.length}回目)`);
       }
-      else if((ietora_ary[i]-5)===timerCount){
-        msg.channel.send(`イエッタイガァァァァァァァァァァァァァァァァ！ (${n}/${ietora_ary.length}回目)`);
+      else if ((kokosuki_ary[i] - 5) === timerCount) {
+        msg.channel.send(`ここすき！ (${n}/${kokosuki_ary.length}回目)`);
       }
     }
   }

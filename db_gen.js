@@ -15,7 +15,7 @@ else {
 
 console.log(database);
 
-fs.readdir(config.dirctory, (err, files) =>{
+fs.readdir(config.directory, (err, files) =>{
     check(files.length);
     files.forEach(element => {
         //console.log(element);
@@ -27,7 +27,7 @@ fs.readdir(config.dirctory, (err, files) =>{
             ary.push(result[0]);
         }
         else{
-            mm.parseFile(config.dirctory+element,{}).then((metadata)=> {
+            mm.parseFile(config.directory+element,{}).then((metadata)=> {
                 //console.log(metadata);
                 const data = {
                     file : element,
@@ -35,7 +35,7 @@ fs.readdir(config.dirctory, (err, files) =>{
                     artist: metadata.common.artist,
                     album: metadata.common.album,
                     id: uuid(),
-                    housetigerTimes: []
+                    kokosukiTimes: []
                 };
                 ary.push(data);
                 //console.log(ary.length+"/"+files.length);
