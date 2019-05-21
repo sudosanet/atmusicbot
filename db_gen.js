@@ -49,7 +49,7 @@ function check(n){
     console.log("Database generating... "+ary.length+"/"+n);
     if(ary.length===n){
         setTimeout(function(){
-            fs.writeFile(file, JSON.stringify(ary));
+            fs.writeFileSync(file, JSON.stringify(ary));
         },1000);
     }
     else{

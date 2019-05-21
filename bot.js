@@ -4,6 +4,8 @@ const fs = require("fs");
 const ytdl = require("ytdl-core");
 const mm = require("music-metadata");
 const request = require('request');
+const ffmpeg = require('fluent-ffmpeg');
+let command;
 //const streamOptions = { seek: 0, volume: 1 };
 let database;
 const dbfile = 'database.json';
@@ -14,8 +16,8 @@ if (!fs.existsSync(dbfile)) {
 else {
   database = JSON.parse(fs.readFileSync(dbfile, 'utf8'));
 }
-const config = require("./config.json");
-
+//const config = require("./config.json");
+let config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
 let queue = [];
 let dispatcher;
 let connect;
@@ -51,6 +53,7 @@ client.on("message", message => {
           connect = connection;
           msg = message;
           next();
+
           //console.log(dispatcher);
           dispatcher.setVolume(0.2);
           /*
@@ -69,7 +72,14 @@ client.on("message", message => {
     }
   }
   else if (message.content === "!skip") {
-    next();
+    if (!isJoindChannnel) return;
+    if (command) {
+      command.on('error', function () {
+        console.log('Ffmpeg has been killed');
+        setTimeout(next, 500);
+      })
+      command.kill();
+    }
   }
   else if (message.content.startsWith("!search")) {
     let query = message.content.replace("!search ", "");
@@ -259,9 +269,9 @@ function play() {
   if (!isJoindChannnel) return;
   let stream;
   if (queue[0][1]) {
-    //msg.channel.send("再生："+queue[0][0].title+"/"+queue[0][0].artist);
-    //dispatcher = connect.playFile(dir+queue[0][0].file);
-    stream = fs.createReadStream(config.directory + queue[0][0].file);
+    command = ffmpeg(config.directory + queue[0][0].file).audioCodec("pcm_s16le").noVideo().format('wav');
+    stream = command.pipe();
+    stream.on("data", (data) => { console.log(data) });
     broadcast.playStream(stream);
     mm.parseFile(config.directory + queue[0][0].file, {}).then((metadata) => {
       /*let img={};
@@ -280,7 +290,8 @@ function play() {
     if (queue[0][0].startsWith("https://www.youtube.com/watch") || queue[0][0].startsWith("https://youtu.be/")) {
       ytdl.getInfo(queue[0][0], {}, (err, info) => {
         const form = (info.formats.filter(f => f.type == 'audio/webm; codecs="opus"'));
-        stream = ytdl(queue[0][0], { format: form[0] });
+        command = ffmpeg(ytdl(queue[0][0], { format: form[0] })).audioCodec("pcm_s16le").noVideo().format('wav');
+        let stream = command.pipe();
         broadcast.playStream(stream);
         stream.on("end", () => {
           console.log("end");
@@ -335,16 +346,19 @@ function bocchi() {
     //console.log(nowchannel.members.size);
     setTimeout(bocchi, 50000);
     if (nowchannel.members.size == 1) {
-      dispatcher = null;
-      broadcast.end();
-      broadcast = null;
-      nowchannel.connection.disconnect();
-      nowchannel.leave();
-      isJoindChannnel = false;
-      flag = false;
-      clearInterval(timer);
+      exit();
     }
   }
+}
+function exit() {
+  dispatcher = null;
+  broadcast.end();
+  broadcast = null;
+  nowchannel.connection.disconnect();
+  nowchannel.leave();
+  isJoindChannnel = false;
+  flag = false;
+  clearInterval(timer);
 }
 //タイマーカウント関数
 function count() {
@@ -364,3 +378,4 @@ function count() {
     }
   }
 }
+//client.on('debug', console.log)
