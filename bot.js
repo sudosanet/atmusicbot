@@ -5,7 +5,6 @@ const ytdl = require("ytdl-core");
 const mm = require("music-metadata");
 const request = require('request');
 const ffmpeg = require('fluent-ffmpeg');
-let command;
 //const streamOptions = { seek: 0, volume: 1 };
 let database;
 const dbfile = 'database.json';
@@ -73,13 +72,15 @@ client.on("message", message => {
   }
   else if (message.content === "!skip") {
     if (!isJoindChannnel) return;
-    if (command) {
+    /*if (command) {
       command.on('error', function () {
         console.log('Ffmpeg has been killed');
-        setTimeout(next, 500);
+        //setTimeout(next, 500);
       })
       command.kill();
-    }
+      */
+     broadcast.end();
+     setTimeout(next,500);
   }
   else if (message.content.startsWith("!search")) {
     let query = message.content.replace("!search ", "");
@@ -261,18 +262,25 @@ client.on("message", message => {
   else if (message.content.startsWith("!help")) {
     message.reply("使い方\n`!join` : Botを通話に追加します\n`!search (title|album|artist) string` : ローカルの音楽ファイルから検索を行います\n`!play number` : 検索結果の中から指定番号のファイルをキューに追加します\n`!play string` : ローカルの音楽ファイルから検索を行い最初にヒットした曲をキューに追加します\n`!play (youtube_url|file_url)` : Youtubeの動画またはリモート音楽ファイルをキューに追加します。対応形式はmp3,flac,wav,m4a(AAC),opus,oggです。\n`!skip` : 現在再生中のファイルをスキップします\n`!nowplay (!np)` : 現在再生中の音楽の詳細を表示します\n`!queue` : キューを表示します\n`!queue remove number` : キューから指定した曲を削除します\n`!queue remove all` : キューをリセットします\n`!recodekokosuki (!rks)` : ここすきを記録します(ここすきしたいタイミングで実行してください)\n`!togglekokosukimode (!tkm)` : ここすきがある曲のみを再生するモードをオン(オフ)にします\n`!help` : このヘルプを表示します");
   }
+  else if (message.content.startsWith("!disconnect")||message.content.startsWith("!quit")) {
+    exit();
+  }
 });
 let flag = false;
 //let i = 0;
 let timeout;
 function play() {
   if (!isJoindChannnel) return;
-  let stream;
   if (queue[0][1]) {
-    command = ffmpeg(config.directory + queue[0][0].file).audioCodec("pcm_s16le").noVideo().format('wav');
-    stream = command.pipe();
-    stream.on("data", (data) => { console.log(data) });
+    let file = fs.createReadStream(config.directory + queue[0][0].file);
+    let command = ffmpeg(file).audioCodec("pcm_s16le").noVideo().format('wav');
+    let stream = command.pipe();
+    //stream.on("data", (data) => { console.log(data) });
     broadcast.playStream(stream);
+    stream.on("end", () => {
+      console.log("end");
+      //setTimeout(next,500);
+    });
     mm.parseFile(config.directory + queue[0][0].file, {}).then((metadata) => {
       /*let img={};
       if(metadata.common.picture){
@@ -290,7 +298,7 @@ function play() {
     if (queue[0][0].startsWith("https://www.youtube.com/watch") || queue[0][0].startsWith("https://youtu.be/")) {
       ytdl.getInfo(queue[0][0], {}, (err, info) => {
         const form = (info.formats.filter(f => f.type == 'audio/webm; codecs="opus"'));
-        command = ffmpeg(ytdl(queue[0][0], { format: form[0] })).audioCodec("pcm_s16le").noVideo().format('wav');
+        let command = ffmpeg(ytdl(queue[0][0], { format: form[0] })).audioCodec("pcm_s16le").noVideo().format('wav');
         let stream = command.pipe();
         broadcast.playStream(stream);
         stream.on("end", () => {
@@ -300,7 +308,7 @@ function play() {
       });
     }
     else {
-      stream = request(queue[0][0]);
+      let stream = request(queue[0][0]);
       broadcast.playStream(stream);
       stream.on("end", () => {
         console.log("end");
@@ -319,6 +327,7 @@ function play() {
 }
 function next() {
   clearTimeout(timeout);
+  //broadcast.destroy();
   //経過時間リセット
   timerCount = 0;
   //console.log(dispatcher);
