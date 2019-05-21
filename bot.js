@@ -119,12 +119,12 @@ client.on("message", message => {
       message.reply("結果が見つかりません");
     }
     else {
-      if (text.length > 1999) {
-        message.channel.send(text.slice(0, 1999));
-        message.channel.send(text.slice(2000, text.length));
+      if (text.length > 1899) {
+        message.channel.send(kakoi(text.slice(0, 1899)));
+        message.channel.send(kakoi(text.slice(1900, text.length)));
       }
       else {
-        message.reply(text);
+        message.reply(kakoi(text));
       }
       search_result = result;
     }
@@ -198,10 +198,10 @@ client.on("message", message => {
       else {
         displayname = element[0];
       }
-      text += "\n `[" + num + "]" + displayname + "`";
+      text += "\n [" + num + "]" + displayname;
       num++;
     });
-    message.reply(text);
+    message.reply(kakoi(text));
   }
   else if (message.content.startsWith("!nowplay") || message.content.startsWith("!np")) {
     //チャンネルに参加してない場合はリターン
@@ -260,7 +260,7 @@ client.on("message", message => {
     message.reply(`ここすきモードを${iskokosukiModeEnabled ? "オン" : "オフ"}にしました`);
   }
   else if (message.content.startsWith("!help")) {
-    message.reply("使い方\n`!join` : Botを通話に追加します\n`!search (title|album|artist) string` : ローカルの音楽ファイルから検索を行います\n`!play number` : 検索結果の中から指定番号のファイルをキューに追加します\n`!play string` : ローカルの音楽ファイルから検索を行い最初にヒットした曲をキューに追加します\n`!play (youtube_url|file_url)` : Youtubeの動画またはリモート音楽ファイルをキューに追加します。対応形式はmp3,flac,wav,m4a(AAC),opus,oggです。\n`!skip` : 現在再生中のファイルをスキップします\n`!nowplay (!np)` : 現在再生中の音楽の詳細を表示します\n`!queue` : キューを表示します\n`!queue remove number` : キューから指定した曲を削除します\n`!queue remove all` : キューをリセットします\n`!recodekokosuki (!rks)` : ここすきを記録します(ここすきしたいタイミングで実行してください)\n`!togglekokosukimode (!tkm)` : ここすきがある曲のみを再生するモードをオン(オフ)にします\n`!help` : このヘルプを表示します");
+    message.reply("使い方\n`!join` : Botを通話に追加します\n`!search (title|album|artist) string` : ローカルの音楽ファイルから検索を行います\n`!play number` : 検索結果の中から指定番号のファイルをキューに追加します\n`!play string` : ローカルの音楽ファイルから検索を行い最初にヒットした曲をキューに追加します\n`!play (youtube_url|file_url)` : Youtubeの動画またはリモート音楽ファイルをキューに追加します。対応形式はmp3,flac,wav,m4a(AAC),opus,oggです。\n`!skip` : 現在再生中のファイルをスキップします\n`!nowplay (!np)` : 現在再生中の音楽の詳細を表示します\n`!queue` : キューを表示します\n`!queue remove number` : キューから指定した曲を削除します\n`!queue remove all` : キューをリセットします\n`!recodekokosuki (!rks)` : ここすきを記録します(ここすきしたいタイミングで実行してください)\n`!togglekokosukimode (!tkm)` : ここすきがある曲のみを再生するモードをオン(オフ)にします\n`!disconnect (!quit)` : botを切断します\n`!help` : このヘルプを表示します");
   }
   else if (message.content.startsWith("!disconnect")||message.content.startsWith("!quit")) {
     exit();
@@ -386,5 +386,9 @@ function count() {
       }
     }
   }
+}
+function kakoi(text){
+  const o = "```\n"+text+"\n```";
+  return o;
 }
 //client.on('debug', console.log)
