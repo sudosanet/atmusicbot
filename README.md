@@ -21,32 +21,19 @@ discordのbot用トークンを取得して記述してください
 ```npm start```
 
 ## 使い方
-`!join` : Botを通話に追加します 
-
-`!search (title|album|artist) string` : ローカルの音楽ファイルから検索を行います 
-
-`!play number` : 検索結果の中から指定番号のファイルをキューに追加します 
-
-`!play string` : ローカルの音楽ファイルから検索を行い最初にヒットした曲をキューに追加します 
-
-`!play (youtube_url|file_url)` : YouTubeの動画またはリモート音楽ファイルをキューに追加します。 
-
-`!skip` : 現在再生中のファイルをスキップします 
-
-`!nowplay (!np)` : 現在再生中の音楽の詳細を表示します 
-
-`!queue` : キューを表示します 
-
+`!join` : Botを通話に追加します  
+`!search (title|album|artist) string` : ローカルの音楽ファイルから検索を行います  
+`!play number` : 検索結果の中から指定番号のファイルをキューに追加します  
+`!play string` : ローカルの音楽ファイルから検索を行い最初にヒットした曲をキューに追加します  
+`!play (youtube_url|file_url)` : YouTubeの動画またはリモート音楽ファイルをキューに追加します。  
+`!skip` : 現在再生中のファイルをスキップします  
+`!nowplay (!np)` : 現在再生中の音楽の詳細を表示します  
+`!queue` : キューを表示します  
 `!queue remove number` : キューから指定した曲を削除します 
-
-`!queue remove all` : キューをリセットします 
-
-`!recodekokosuki (!rks)` : ここすきを記録します（ここすきしたいタイミングで実行してください） 
-
-`!togglekokosukimode (!tkm)` : ここすきがある曲のみを再生するモードをオン（オフ）にします 
-
-`!disconnect (!quit)` : botを切断します 
-
-`!help` : このヘルプを表示します") 
+`!queue remove all` : キューをリセットします  
+`!recodekokosuki (!rks)` : ここすきを記録します（ここすきしたいタイミングで実行してください）  
+`!togglekokosukimode (!tkm)` : ここすきがある曲のみを再生するモードをオン（オフ）にします  
+`!disconnect (!quit)` : botを切断します  
+`!help` : このヘルプを表示します")  
  
 （作成中）
